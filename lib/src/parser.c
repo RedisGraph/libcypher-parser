@@ -47,6 +47,15 @@ DECLARE_VECTOR(blocks, struct block *, NULL);
 
 typedef struct _yycontext yycontext;
 typedef int (*yyrule)(yycontext *yy);
+
+/**
+ * Return the appropriate yyrule according to the given flags.
+ * 
+ * @param  flags: Libcypher parser entry point flags.
+ * @return yyrule which fit the flag entry point.
+ */
+yyrule cypher_yyrule_from_flags(int flags);
+
 typedef int (*source_cb_t)(void *data, char *buf, int n);
 
 static int parse_each(yyrule rule, source_cb_t source, void *sourcedata,
@@ -563,8 +572,9 @@ int cypher_uparse_each(const char *s, size_t n,
         struct cypher_input_position *last, cypher_parser_config_t *config,
         uint_fast32_t flags)
 {
-    yyrule rule = (flags & CYPHER_PARSE_ONLY_STATEMENTS)?
-            yy_statement : yy_directive;
+
+    yyrule rule = cypher_yyrule_from_flags(flags);
+    
     return uparse_each(rule, s, n, callback, userdata, last, config, flags);
 }
 
@@ -573,8 +583,7 @@ cypher_parse_result_t *cypher_uparse(const char *s, size_t n,
         struct cypher_input_position *last, cypher_parser_config_t *config,
         uint_fast32_t flags)
 {
-    yyrule rule = (flags & CYPHER_PARSE_ONLY_STATEMENTS)?
-            yy_statement : yy_directive;
+    yyrule rule = cypher_yyrule_from_flags(flags);
     return uparse(rule, s, n, last, config, flags);
 }
 
@@ -583,8 +592,7 @@ int cypher_fparse_each(FILE *stream, cypher_parser_segment_callback_t callback,
         void *userdata, struct cypher_input_position *last,
         cypher_parser_config_t *config, uint_fast32_t flags)
 {
-    yyrule rule = (flags & CYPHER_PARSE_ONLY_STATEMENTS)?
-            yy_statement : yy_directive;
+    yyrule rule = cypher_yyrule_from_flags(flags);
     return fparse_each(rule, stream, callback, userdata, last, config, flags);
 }
 
@@ -593,8 +601,7 @@ cypher_parse_result_t *cypher_fparse(FILE *stream,
         struct cypher_input_position *last, cypher_parser_config_t *config,
         uint_fast32_t flags)
 {
-    yyrule rule = (flags & CYPHER_PARSE_ONLY_STATEMENTS)?
-            yy_statement : yy_directive;
+    yyrule rule = cypher_yyrule_from_flags(flags);
     return fparse(rule, stream, last, config, flags);
 }
 
@@ -3245,4 +3252,10 @@ cypher_astnode_t *add_child(yycontext *yy, cypher_astnode_t *node)
         abort_parse(yy);
     }
     return node;
+}
+
+yyrule cypher_yyrule_from_flags(int flags) {
+    if(flags & CYPHER_PARSE_ONLY_STATEMENTS) return yy_statement;
+    if(flags & CYPHER_PARSE_ONLY_PARAMETERS) return yy_params;
+    return yy_directive;
 }

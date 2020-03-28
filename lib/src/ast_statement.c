@@ -49,6 +49,7 @@ cypher_astnode_t *cypher_ast_statement(cypher_astnode_t * const *options,
             CYPHER_AST_STATEMENT_OPTION, NULL);
     REQUIRE(cypher_astnode_instanceof(body, CYPHER_AST_QUERY) ||
             cypher_astnode_instanceof(body, CYPHER_AST_SCHEMA_COMMAND) ||
+            cypher_astnode_instanceof(body, CYPHER_AST_STRING) ||
             cypher_astnode_instanceof(body, CYPHER_AST_NAMED_PATH), NULL);
     REQUIRE_CONTAINS(children, nchildren, body, NULL);
 

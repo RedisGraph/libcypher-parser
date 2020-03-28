@@ -23,7 +23,7 @@
 # previous block, should have an associated set of rules delimited by `<` and
 # `>`.
 
-__entry_points = directive | statement
+__entry_points = directive | statement | params
 
 
 directive = - _directive
@@ -49,10 +49,26 @@ __statement =
     | d:cypher-statement               { yy->result = d; }
     )
 
+params = - _params
+_params =
+    ( __params                          {finished(yy); }
+    | _error_ (EOF | skip-to-params) _params
+    )
+__params =
+    ( EOF                               { yy->result = NULL; }
+    | SEMICOLON                         { yy->result = NULL; }
+    | d:cypher-params                   { yy->result = d; }
+    )
 
 #----------------------------------------------------
 # Statement parsing
 #----------------------------------------------------
+
+cypher-params = < statement-option* - (q:query-string) >
+                                        { $$ = statement(q); }
+
+query-string =                        { strbuf_reset(); }
+   (<.*> {strbuf_append_block();})          { $$ = strbuf_string(); }
 
 cypher-statement = < statement-option* - (b:query | b:schema-command | b:named-path-predicate) >
                                        { $$ = statement(b); }
@@ -71,7 +87,17 @@ cypher-version = <
 cypher-param = < n:cypher-param-name - EQUAL - v:cypher-param-val >
                                        { $$ = cypher_option_param(n, v); }
 cypher-param-name = < [a-zA-Z0-9_]+ >  { $$ = block_string(); }
-cypher-param-val = < (!WS .)+ >        { $$ = block_string(); }
+cypher-param-val = p:cypher-param-value        { $$ = p; }
+
+cypher-param-value =
+      true-literal
+    | false-literal
+    | null-literal
+    | string-literal
+    | float-literal
+    | integer-literal
+    | collection-literal
+    | map-literal
 
 profile-option = < PROFILE >           { $$ = profile_option(); }
 explain-option = < EXPLAIN >           { $$ = explain_option(); }
@@ -86,7 +112,7 @@ schema-command =
 
 named-path-predicate =
     < PATHPATTERN i:identifier EQUAL - p:pattern-path -
-    (WHERE e:expression | e:_null_) 
+    (WHERE e:expression | e:_null_)
     >                                   { $$ = named_path_predicate(i, p, e); }
 
 create-index =
@@ -756,7 +782,7 @@ path-pattern =
           ( - RIGHT-ARROW-HEAD >       { $$ = path_pattern(e, BIDIRECTIONAL); }
           | _empty_ >                  { $$ = path_pattern(e, INBOUND); }
           )
-      | DASH - DIV - e:path-expression - DIV - DASH 
+      | DASH - DIV - e:path-expression - DIV - DASH
           ( - RIGHT-ARROW-HEAD >       { $$ = path_pattern(e, OUTBOUND); }
           | _empty_ >                  { $$ = path_pattern(e, BIDIRECTIONAL); }
           )
@@ -1152,6 +1178,14 @@ resync-statement =
     | CYPHER
     | PROFILE
     | EXPLAIN
+
+skip-to-params = < . (!(
+      EOF
+    | SEMICOLON
+    | (WS | comment) resync-params
+    ) .)* >                            { $$ = skip(); }
+
+resync-params = CYPHER
 
 skip-to-clause = < . (!(
       EOF
