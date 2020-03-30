@@ -23,7 +23,7 @@
 # previous block, should have an associated set of rules delimited by `<` and
 # `>`.
 
-__entry_points = directive | statement | params
+__entry_points = directive | statement
 
 
 directive = - _directive
@@ -70,7 +70,7 @@ cypher-params = < statement-option* - (q:query-string) >
 query-string =                        { strbuf_reset(); }
    (<.*> {strbuf_append_block();})          { $$ = strbuf_string(); }
 
-cypher-statement = < statement-option* - (b:query | b:schema-command | b:named-path-predicate) >
+cypher-statement = < statement-option* - (b:query | b:schema-command) >
                                        { $$ = statement(b); }
 statement-option =
     ( o:cypher-option | o:profile-option | o:explain-option )
@@ -110,9 +110,9 @@ schema-command =
     ) ~{ERR("a schema command")}
     (SEMICOLON | EOF)
 
-named-path-predicate =
+named-path-clause =
     < PATHPATTERN i:identifier EQUAL - p:pattern-path -
-    (WHERE e:expression | e:_null_)
+    (WHERE e:expression | e:_null_) 
     >                                   { $$ = named_path_predicate(i, p, e); }
 
 create-index =
@@ -197,6 +197,7 @@ clause =
     | loadcsv-clause
     | start-clause
     | union-clause
+    | named-path-clause
     ) ~{ERR("a clause")}
 
 loadcsv-clause =
@@ -782,7 +783,7 @@ path-pattern =
           ( - RIGHT-ARROW-HEAD >       { $$ = path_pattern(e, BIDIRECTIONAL); }
           | _empty_ >                  { $$ = path_pattern(e, INBOUND); }
           )
-      | DASH - DIV - e:path-expression - DIV - DASH
+      | DASH - DIV - e:path-expression - DIV - DASH 
           ( - RIGHT-ARROW-HEAD >       { $$ = path_pattern(e, OUTBOUND); }
           | _empty_ >                  { $$ = path_pattern(e, BIDIRECTIONAL); }
           )
@@ -791,7 +792,7 @@ path-pattern =
 path-expression =
     < p:path-alternative                { sequence_add(p); }
     (- p:path-alternative               { sequence_add(p); }
-    )* >                                { $$ = path_pattern_expression(); }
+    )* - ( e:pattern-properties | e:_null_ ) >                                { $$ = path_pattern_expression(e); }
 
 path-alternative =
     < p:path-repetition                 { sequence_add(p); }
@@ -813,23 +814,23 @@ path-repetition =
        )
      )
 
-# TODO: make ast nodes for label, path-group, ..., path-reference
 path-base =
-    e:path-edge                          { $$ = e; }
+    p:path-edge                          { $$ = p; }
     | p:path-group                       { $$ = p; }
     | p:path-reference                   { $$ = p; }
-#    | path-any                          {  }
-#    | p:path-node                       { $$ = p; }
-#    -
+    | path-any                           { $$ = p; }
+    | p:path-node                        { $$ = p; }
+    -
 
 path-edge =
     < r:rel-type >                       { $$ = path_pattern_edge(r); }
 
 path-group =
-    LEFT-SQ-PAREN - p:path-expression - RIGHT-SQ-PAREN {$$ = p}
+    LEFT-SQ-PAREN - p:path-expression
+    - RIGHT-SQ-PAREN                     { $$ = p; }
 
 path-any =
-    < DASH >
+    < DASH >                             { $$ = path_pattern_any(); }
 
 path-node =
     < LEFT-PAREN -
@@ -838,7 +839,7 @@ path-node =
     RIGHT-PAREN >                      { $$ = node_pattern(NULL, p); }
 
 path-reference =
-    < '~' - i:identifier >               { path_pattern_reference(i); }
+    < '~' - i:identifier >               { $$ = path_pattern_reference(i); }
 
 relationship-pattern =
       < ( LEFT-ARROW-HEAD - DASH -
@@ -880,6 +881,8 @@ rel-varlength =
     | STAR - < (s:integer-literal | s:_null_) >
                                        { $$ = range(s, s); }
     | < STAR - >                       { $$ = range(NULL, NULL); }
+#    | < PLUS - >                       { $$ = range(1, NULL); }
+#    | < QUESTIONMARK - >               { $$ = range(NULL, 1); }
     )
 
 pattern-properties = map-literal | parameter
