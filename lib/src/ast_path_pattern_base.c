@@ -1,4 +1,7 @@
+#include "../../config.h"
 #include "astnode.h"
+#include "util.h"
+#include <assert.h> 
 
 struct path_pattern_base {
     cypher_astnode_t _astnode;
@@ -117,7 +120,7 @@ ssize_t detailstr(const cypher_astnode_t *self, char *str, size_t size) {
 
     if (node->varlength != NULL)
     {
-        r = snprintf(str+n, (n < size)? size-n : 0, " range = @%u",
+        r = snprintf(str+n, (n < size)? size-n : 0, " range=@%u",
                 node->varlength->ordinal);
         if (r < 0)
         {

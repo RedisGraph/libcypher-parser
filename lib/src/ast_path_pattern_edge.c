@@ -1,4 +1,7 @@
+#include "../../config.h"
 #include "astnode.h"
+#include "util.h"
+#include <assert.h> 
 
 struct path_pattern_edge
 {
@@ -71,5 +74,5 @@ cypher_astnode_t *clone(const cypher_astnode_t *self,
 
 ssize_t detailstr(const cypher_astnode_t *self, char *str, size_t size) {
     struct path_pattern_edge *node = container_of(self, struct path_pattern_edge, _astnode);
-    return snprintf(str, size, "edge label = @%u", node->reltype->ordinal);
+    return snprintf(str, size, "edge label=@%u", node->reltype->ordinal);
 }
