@@ -75,15 +75,6 @@ const cypher_astnode_t *cypher_ast_path_pattern_base_get_child(
     return node->path_base;
 }
 
-const cypher_astnode_t *cypher_ast_path_pattern_base_get_varlength(
-		const cypher_astnode_t *astnode)
-{
-	REQUIRE_TYPE(astnode, CYPHER_AST_PATH_PATTERN_BASE, NULL);
-	struct path_pattern_base *node =
-			container_of(astnode, struct path_pattern_base, _astnode);
-	return node->varlength;
-}
-
 cypher_astnode_t *clone(const cypher_astnode_t *self,
                         cypher_astnode_t **children)
 {
