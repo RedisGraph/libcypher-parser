@@ -227,6 +227,23 @@ clause =
     | union-clause
     ) ~{ERR("a clause")}
 
+subquery-clause =
+    ( match-clause
+    | subquery-return-clause
+    | unwind-clause
+    | merge-clause
+    | create-clause
+    | set-clause
+    | delete-clause
+    | remove-clause
+    | with-clause
+    | foreach-clause
+    | call-clause
+    | loadcsv-clause
+    | start-clause
+    | union-clause
+    ) ~{ERR("a clause")}
+
 loadcsv-clause =
       < LOADCSV WITH-HEADERS FROM u:expression AS i:identifier
         (FIELDTERMINATOR t:string-literal | t:_null_) >
@@ -416,7 +433,7 @@ call-proc =
 
 call-subquery =
     < CALL LEFT-CURLY -
-    ( c:clause                         { sequence_add(c); }
+    ( c:subquery-clause                { sequence_add(c); }
     )+ RIGHT-CURLY >                   { $$ = call_subquery(); }
     -
 
@@ -443,6 +460,7 @@ return-clause =
         (o:order-by | o:_null_) (s:skip | s:_null_) (l:limit | l:_null_) >
                                        { $$ = return_clause(false,false,o,s,l); }
       )
+
 additional-return-projections =
     ( COMMA - i:return-projection      { sequence_add(i); }
     )*
@@ -456,6 +474,37 @@ return-projection =
                                            i = block_identifier();
                                          }
                                        }
+      ) >                              { $$ = projection(e, i); }
+
+subquery-return-clause =
+    < RETURN
+      ( DISTINCT STAR - subquery-additional-return-projections
+        (o:order-by | o:_null_) (s:skip | s:_null_) (l:limit | l:_null_) >
+                                       { $$ = return_clause(true,true,o,s,l); }
+      | DISTINCT i:subquery-return-projection   { sequence_add(i); }
+        subquery-additional-return-projections
+        (o:order-by | o:_null_) (s:skip | s:_null_) (l:limit | l:_null_) >
+                                       { $$ = return_clause(true,false,o,s,l); }
+      | STAR -
+        subquery-additional-return-projections
+        (o:order-by | o:_null_) (s:skip | s:_null_) (l:limit | l:_null_) >
+                                       { $$ = return_clause(false,true,o,s,l); }
+      | i:subquery-return-projection            { sequence_add(i); }
+        subquery-additional-return-projections
+        (o:order-by | o:_null_) (s:skip | s:_null_) (l:limit | l:_null_) >
+                                       { $$ = return_clause(false,false,o,s,l); }
+      )
+
+subquery-additional-return-projections =
+    ( COMMA - i:subquery-return-projection      { sequence_add(i); }
+    )*
+
+# if the projection in CALL SUBQUERY does not have an alias,
+# its identifier will be NULL
+subquery-return-projection =
+    < _block_start_ e:expression
+      ( AS i:identifier _block_merge_
+      | i:_null_ _block_merge_
       ) >                              { $$ = projection(e, i); }
 
 order-by = < ORDER-BY s:sort-item      { sequence_add(s); }
