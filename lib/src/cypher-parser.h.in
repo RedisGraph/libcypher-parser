@@ -3367,6 +3367,19 @@ __cypherlang_pure
 const cypher_astnode_t *cypher_ast_projection_get_alias(
         const cypher_astnode_t *node);
 
+/**
+ * Return if `CYPHER_AST_PROJECTION` node is aliased
+ * If the expression projected is an identifier the result will be alwasys true
+ *
+ * If the node is not an instance of `CYPHER_AST_PROJECTION` then the result
+ * will be undefined.
+ *
+ * @param [node] The AST node.
+ * @return true if the projection is aliased, false otherwise.
+ */
+__cypherlang_pure
+bool cypher_ast_projection_is_aliased(
+        const cypher_astnode_t *astnode);
 
 /**
  * Construct a `CYPHER_AST_ORDER_BY` node.

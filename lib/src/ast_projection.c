@@ -98,6 +98,37 @@ const cypher_astnode_t *cypher_ast_projection_get_alias(
 }
 
 
+bool cypher_ast_projection_is_aliased(
+    const cypher_astnode_t *astnode
+)
+{
+    REQUIRE_TYPE(astnode, CYPHER_AST_PROJECTION, NULL);
+    struct projection *node = container_of(astnode, struct projection, _astnode);
+
+    const cypher_astnode_t *alias = node->alias;
+    const cypher_astnode_t *exp = node->expression;
+
+    if(alias != NULL) {
+        if(cypher_astnode_type(exp) == CYPHER_AST_IDENTIFIER) {
+            return true;
+        }
+        else {
+            // even in the case of an unaliased literal, the parser returns
+            // an alias, so to detect if it is a real alias, we need to compare
+            // the range of the projection to the range of its alias
+            // if start columns are different, then this is a real alias
+            struct cypher_input_range range_proj = cypher_astnode_range(astnode);
+            struct cypher_input_range range_alias = cypher_astnode_range(alias);
+
+            return (range_proj.start.column != range_alias.start.column);
+        }
+    } else {
+        // the identifier itself is used as alias
+        return true;
+    }
+}
+
+
 ssize_t detailstr(const cypher_astnode_t *self, char *str, size_t size)
 {
     REQUIRE_TYPE(self, CYPHER_AST_PROJECTION, -1);
