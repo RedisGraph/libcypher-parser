@@ -205,6 +205,48 @@ void cypher_ast_query_replace_clauses(
     astnode->nchildren -= end_index - start_index;
 }
 
+cypher_astnode_t *cypher_ast_query_push_clause(
+    cypher_astnode_t *astnode,
+    cypher_astnode_t *clause,
+    unsigned int index
+)
+{
+    REQUIRE_TYPE(astnode, CYPHER_AST_QUERY, NULL);
+    REQUIRE_TYPE(clause, CYPHER_AST_QUERY_CLAUSE, NULL);
+    struct query *query = container_of(astnode, struct query, _astnode);
+
+    unsigned int nchildren = astnode->nchildren + 1;
+    unsigned int nclauses = query->nclauses + 1;
+
+    cypher_astnode_t **clauses = calloc(nclauses, sizeof(cypher_astnode_t *));
+    if (clauses == NULL) {
+        return NULL;
+    }
+
+    cypher_astnode_t **children = calloc(nchildren, sizeof(cypher_astnode_t *));
+    if (children == NULL) {
+        return NULL;
+    }
+
+    //insert new clause
+    for(uint i = 0; i < index; i++) {
+        clauses[i] = query->clauses[i];
+        children[i] = query->clauses[i];
+    }
+    clauses[index] = clause;
+    children[index] = clause;
+    for(uint i = index + 1; i < nclauses; i++) {
+        clauses[i] = query->clauses[i - 1];
+        children[i] = query->clauses[i - 1];
+    }
+
+    cypher_astnode_t *new_query = cypher_ast_query(NULL, 0, clauses, nclauses,
+        children, nchildren, astnode->range);
+    free(clauses);
+    free(children);
+
+    return new_query;
+}
 
 ssize_t detailstr(const cypher_astnode_t *self, char *str, size_t size)
 {

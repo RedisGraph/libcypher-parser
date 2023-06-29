@@ -99,6 +99,23 @@ void cypher_ast_call_subquery_replace_query
     node->query = query;
 }
 
+void cypher_ast_call_subquery_push_clause(
+    cypher_astnode_t *astnode,
+    cypher_astnode_t *clause,
+    unsigned int index
+) {
+    REQUIRE_TYPE(astnode, CYPHER_AST_CALL_SUBQUERY, NULL);
+    struct call_subquery *subquery_node =
+            container_of(astnode, struct call_subquery, _astnode);
+
+    cypher_astnode_t *new_query =
+        cypher_ast_query_push_clause(subquery_node->query, clause, index);
+
+    cypher_astnode_free(subquery_node->query);
+    astnode->children[0] = new_query;
+    subquery_node->query = new_query;
+}
+
 cypher_astnode_t *clone(const cypher_astnode_t *self,
         cypher_astnode_t **children)
 {

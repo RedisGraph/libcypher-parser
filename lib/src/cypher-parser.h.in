@@ -551,6 +551,26 @@ void cypher_ast_statement_replace_body(cypher_astnode_t *astnode,
         const cypher_astnode_t *body);
 
 /**
+ * Insert clause at position `index` of a `CYPHER_AST_STATEMENT` node.
+ *
+ * If the node is not an instance of `CYPHER_AST_STATEMENT` then the result will
+ * be undefined.
+ *
+ * If the clause is not an instance of `CYPHER_AST_QUERY_CLAUSE` then the result
+ * will be undefined.
+ *
+ * @param [node] The AST node.
+ * @param [clause] The AST clause node.
+ * @param [index] The index of the new clause.
+ */
+void cypher_ast_statement_push_clause
+(
+    cypher_astnode_t *astnode,
+    cypher_astnode_t *clause,
+    unsigned int index
+);
+
+/**
  * Get the number of options in a `CYPHER_AST_STATEMENT` node.
  *
  * If the node is not an instance of `CYPHER_AST_STATEMENT` then the result will
@@ -1327,6 +1347,26 @@ void cypher_ast_query_set_clause(
  */
 void cypher_ast_query_replace_clauses(
         cypher_astnode_t *astnode, cypher_astnode_t *clause, unsigned int start_index, unsigned int end_index);
+
+/**
+ * Insert clause at position `index` of a `CYPHER_AST_QUERY` node.
+ *
+ * If the node is not an instance of `CYPHER_AST_QUERY` then the result will
+ * be undefined.
+ *
+ * If the clause is not an instance of `CYPHER_AST_QUERY_CLAUSE` then the result
+ * will be undefined.
+ *
+ * @param [node] The AST node.
+ * @param [clause] The AST clause node.
+ * @param [index] The index of the new clause.
+ * @return The query, or NULL if an error occurs.
+ */
+cypher_astnode_t *cypher_ast_query_push_clause(
+    cypher_astnode_t *astnode,
+    cypher_astnode_t *clause,
+    unsigned int index
+);
 
 /**
  * Replace the clauses of a `CYPHER_AST_FOREACH` node.
@@ -3128,6 +3168,22 @@ void cypher_ast_call_subquery_replace_query
 (
     cypher_astnode_t *astnode,
     cypher_astnode_t *query
+);
+
+/**
+ * Insert a new clause at position `index` of a `CYPHER_AST_CALL_SUBQUERY` node.
+ *
+ * If the node is not an instance of `CYPHER_AST_CALL_SUBQUERY` then the
+ * result will be undefined.
+ *
+ * @param [astnode] The AST node.
+ * @param [query] The query to replace the existing query with.
+ * @param [index] Position of the new clause
+ */
+void cypher_ast_call_subquery_push_clause(
+    cypher_astnode_t *astnode,
+    cypher_astnode_t *clause,
+    unsigned int index
 );
 
 /**

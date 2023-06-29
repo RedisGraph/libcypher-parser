@@ -92,6 +92,26 @@ void cypher_ast_statement_replace_body
 }
 
 
+void cypher_ast_statement_push_clause
+(
+    cypher_astnode_t *astnode,
+    cypher_astnode_t *clause,
+    unsigned int index
+)
+{
+    REQUIRE_TYPE(astnode, CYPHER_AST_STATEMENT, NULL);
+    REQUIRE_TYPE(clause, CYPHER_AST_QUERY_CLAUSE, NULL);
+    struct statement *node = container_of(astnode, struct statement, _astnode);
+
+    cypher_astnode_t *body =
+        cypher_ast_query_push_clause(node->body, clause, index);
+
+    astnode->children[child_index(astnode, node->body)] = body;
+    cypher_astnode_free(node->body);
+    node->body = body;
+}
+
+
 cypher_astnode_t *clone(const cypher_astnode_t *self,
         cypher_astnode_t **children)
 {
