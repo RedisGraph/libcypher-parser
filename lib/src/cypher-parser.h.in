@@ -316,6 +316,10 @@ extern const cypher_astnode_type_t CYPHER_AST_TRUE;
 extern const cypher_astnode_type_t CYPHER_AST_FALSE;
 /** Type for an AST NULL literal node. */
 extern const cypher_astnode_type_t CYPHER_AST_NULL;
+/** Type for an AST NAN literal node. */
+extern const cypher_astnode_type_t CYPHER_AST_NAN;
+/** Type for an AST INF literal node. */
+extern const cypher_astnode_type_t CYPHER_AST_INF;
 /** Type for an AST label node. */
 extern const cypher_astnode_type_t CYPHER_AST_LABEL;
 /** Type for an AST reltype node. */
@@ -4896,6 +4900,27 @@ cypher_astnode_t *cypher_ast_false(struct cypher_input_range range);
 __cypherlang_must_check
 cypher_astnode_t *cypher_ast_null(struct cypher_input_range range);
 
+/**
+ * Construct a `CYPHER_AST_NAN` node.
+ *
+ * The node will also be an instance of `CYPHER_AST_EXPRESSION`.
+ *
+ * @param [range] The input range.
+ * @return An AST node, or NULL if an error occurs (errno will be set).
+ */
+__cypherlang_must_check
+cypher_astnode_t *cypher_ast_nan(struct cypher_input_range range);
+
+/**
+ * Construct a `CYPHER_AST_INF` node.
+ *
+ * The node will also be an instance of `CYPHER_AST_EXPRESSION`.
+ *
+ * @param [range] The input range.
+ * @return An AST node, or NULL if an error occurs (errno will be set).
+ */
+__cypherlang_must_check
+cypher_astnode_t *cypher_ast_inf(struct cypher_input_range range);
 
 /**
  * Construct a `CYPHER_AST_LABEL` node.

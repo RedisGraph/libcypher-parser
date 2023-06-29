@@ -94,6 +94,9 @@ cypher-param-value =
       true-literal
     | false-literal
     | null-literal
+    | nan-literal
+    | inf-literal
+    | infinity-literal
     | string-literal
     | collection-literal
     | map-literal
@@ -534,6 +537,9 @@ atom =
       true-literal
     | false-literal
     | null-literal
+    | nan-literal
+    | inf-literal
+    | infinity-literal
     | string-literal
     | float-literal
     | integer-literal
@@ -726,6 +732,15 @@ false-literal =
     -
 null-literal =
     < NULL >                           { $$ = null_literal(); }
+    -
+nan-literal =
+    < NAN >                           { $$ = nan_literal(); }
+    -
+inf-literal =
+    < INF >                           { $$ = inf_literal(); }
+    -
+infinity-literal =
+    < INFINITY >                      { $$ = inf_literal(); }
     -
 
 parameter = _block_start_              { strbuf_reset(); }
@@ -1126,6 +1141,9 @@ FIELDTERMINATOR = ([Ff][Ii][Ee][Ll][Dd][Tt][Ee][Rr][Mm][Ii][Nn][Aa][Tt][Oo][Rr] 
 TRUE = ([Tt][Rr][Uu][Ee] WB) ~{ERR("TRUE")}
 FALSE = ([Ff][Aa][Ll][Ss][Ee] WB) ~{ERR("FALSE")}
 NULL = ([Nn][Uu][Ll][Ll] WB) ~{ERR("NULL")}
+NAN = ([Nn][Aa][Nn] WB) ~{ERR("NAN")}
+INF = ([Ii][Nn][Ff] WB) ~{ERR("INF")}
+INFINITY = ([Ii][Nn][Ff][Ii][Nn][Ii][Tt][Yy] WB) ~{ERR("INFINITY")}
 
 SHORTESTPATH = ([Ss][Hh][Oo][Rr][Tt][Ee][Ss][Tt][Pp][Aa][Tt][Hh] WB -)
     ~{ERR("shortestPath")}

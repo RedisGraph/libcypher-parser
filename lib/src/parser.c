@@ -440,6 +440,10 @@ static cypher_astnode_t *_true_literal(yycontext *yy);
 static cypher_astnode_t *_false_literal(yycontext *yy);
 #define null_literal() _null_literal(yy)
 static cypher_astnode_t *_null_literal(yycontext *yy);
+#define nan_literal() _nan_literal(yy)
+static cypher_astnode_t *_nan_literal(yycontext *yy);
+#define inf_literal() _inf_literal(yy)
+static cypher_astnode_t *_inf_literal(yycontext *yy);
 #define strbuf_label() _strbuf_label(yy)
 static cypher_astnode_t *_strbuf_label(yycontext *yy);
 #define strbuf_reltype() _strbuf_reltype(yy)
@@ -2837,6 +2841,21 @@ cypher_astnode_t *_null_literal(yycontext *yy)
     return add_terminal(yy, cypher_ast_null(range));
 }
 
+cypher_astnode_t *_nan_literal(yycontext *yy)
+{
+    assert(yy->prev_block != NULL &&
+            "An AST node can only be created immediately after a `>` in the grammar");
+    struct cypher_input_range range = yy->prev_block->range;
+    return add_terminal(yy, cypher_ast_nan(range));
+}
+
+cypher_astnode_t *_inf_literal(yycontext *yy)
+{
+    assert(yy->prev_block != NULL &&
+            "An AST node can only be created immediately after a `>` in the grammar");
+    struct cypher_input_range range = yy->prev_block->range;
+    return add_terminal(yy, cypher_ast_inf(range));
+}
 
 cypher_astnode_t *_strbuf_label(yycontext *yy)
 {

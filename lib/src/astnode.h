@@ -228,6 +228,8 @@ extern const struct cypher_astnode_vt cypher_boolean_astnode_vt;
 extern const struct cypher_astnode_vt cypher_true_astnode_vt;
 extern const struct cypher_astnode_vt cypher_false_astnode_vt;
 extern const struct cypher_astnode_vt cypher_null_astnode_vt;
+extern const struct cypher_astnode_vt cypher_nan_astnode_vt;
+extern const struct cypher_astnode_vt cypher_inf_astnode_vt;
 extern const struct cypher_astnode_vt cypher_label_astnode_vt;
 extern const struct cypher_astnode_vt cypher_reltype_astnode_vt;
 extern const struct cypher_astnode_vt cypher_prop_name_astnode_vt;

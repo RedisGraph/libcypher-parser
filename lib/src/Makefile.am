@@ -45,6 +45,7 @@ libcypher_parser_la_SOURCES = \
 	ast_function_name.c \
 	ast_identifier.c \
 	ast_index_name.c \
+	ast_inf.c \
 	ast_integer.c \
 	ast_label.c \
 	ast_labels_operator.c \
@@ -58,6 +59,7 @@ libcypher_parser_la_SOURCES = \
 	ast_merge_action.c \
 	ast_merge_properties.c \
 	ast_named_path.c \
+	ast_nan.c \
 	ast_node_id_lookup.c \
 	ast_node_index_lookup.c \
 	ast_node_index_query.c \
