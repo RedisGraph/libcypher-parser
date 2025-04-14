@@ -2030,9 +2030,9 @@ const cypher_astnode_t *cypher_ast_match_get_hint(
         const cypher_astnode_t *node, unsigned int index);
 
 /**
- * Get the predicate of a `CYPHER_AST_PREDICATE` node.
+ * Get the predicate of a `CYPHER_AST_MATCH` node.
  *
- * If the node is not an instance of `CYPHER_AST_PREDICATE` then the result
+ * If the node is not an instance of `CYPHER_AST_MATCH` then the result
  * will be undefined.
  *
  * @param [node] The AST node.
@@ -5233,6 +5233,7 @@ const cypher_astnode_t *cypher_ast_pattern_path_get_element(
  * @param [nlabels] The number of labels in the pattern.
  * @param [properties] A `CYPHER_AST_MAP` node, a `CYPHER_AST_PARAMETER` node,
  *         or null.
+ * @param [predicate] A `CYPHER_AST_EXPRESSION` node, or null.
  * @param [children] The children of the node.
  * @param [nchildren] The number of children.
  * @param [range] The input range.
@@ -5241,8 +5242,9 @@ const cypher_astnode_t *cypher_ast_pattern_path_get_element(
 __cypherlang_must_check
 cypher_astnode_t *cypher_ast_node_pattern(const cypher_astnode_t *identifier,
         cypher_astnode_t * const *labels, unsigned int nlabels,
-        const cypher_astnode_t *properties, cypher_astnode_t **children,
-        unsigned int nchildren, struct cypher_input_range range);
+        const cypher_astnode_t *properties, const cypher_astnode_t *predicate,
+        cypher_astnode_t **children, unsigned int nchildren,
+        struct cypher_input_range range);
 
 /**
  * Get the identifier of a `CYPHER_AST_NODE_PATTERN` node.
@@ -5298,6 +5300,20 @@ const cypher_astnode_t *cypher_ast_node_pattern_get_properties(
 
 
 /**
+ * Get the predicate of a `CYPHER_AST_NODE_PATTERN` node.
+ *
+ * If the node is not an instance of `CYPHER_AST_NODE_PATTERN` then the result
+ * will be undefined.
+ *
+ * @param [node] The AST node.
+ * @return A `CYPHER_AST_PREDICATE` node, or null.
+ */
+__cypherlang_pure
+const cypher_astnode_t *cypher_ast_node_pattern_get_predicate(
+        const cypher_astnode_t *node);
+
+
+/**
  * Construct a `CYPHER_AST_REL_PATTERN` node.
  *
  * @param [direction] The direction of the relationship.
@@ -5306,6 +5322,7 @@ const cypher_astnode_t *cypher_ast_node_pattern_get_properties(
  *         `CYPHER_AST_RELTYPE`.
  * @param [nreltypes] The number of relationship types in the pattern.
  * @param [properties] A `CYPHER_AST_MAP` node, a `CYPHER_AST_PARAMETER` node,
+ * @param [predicate] A `CYPHER_AST_EXPRESSION` node, or null.
  *         or null.
  * @param [varlength] A `CYPHER_AST_RANGE` node, or null.
  * @param [children] The children of the node.
@@ -5317,8 +5334,9 @@ __cypherlang_must_check
 cypher_astnode_t *cypher_ast_rel_pattern(enum cypher_rel_direction direction,
         const cypher_astnode_t *identifier, cypher_astnode_t * const *reltypes,
         unsigned int nreltypes, const cypher_astnode_t *properties,
-        const cypher_astnode_t *varlength, cypher_astnode_t **children,
-        unsigned int nchildren, struct cypher_input_range range);
+         const cypher_astnode_t *predicate, const cypher_astnode_t *varlength,
+         cypher_astnode_t **children, unsigned int nchildren,
+         struct cypher_input_range range);
 
 
 /**
@@ -5397,6 +5415,20 @@ const cypher_astnode_t *cypher_ast_rel_pattern_get_varlength(
  */
 __cypherlang_pure
 const cypher_astnode_t *cypher_ast_rel_pattern_get_properties(
+        const cypher_astnode_t *node);
+
+
+/**
+ * Get the predicate of a `CYPHER_AST_REL_PATTERN` node.
+ *
+ * If the node is not an instance of `CYPHER_AST_REL_PATTERN` then the result
+ * will be undefined.
+ *
+ * @param [node] The AST node.
+ * @return A `CYPHER_AST_PREDICATE` node, or null.
+ */
+__cypherlang_pure
+const cypher_astnode_t *cypher_ast_rel_pattern_get_predicate(
         const cypher_astnode_t *node);
 
 

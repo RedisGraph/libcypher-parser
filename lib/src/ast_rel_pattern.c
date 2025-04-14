@@ -27,6 +27,7 @@ struct rel_pattern
     const cypher_astnode_t *identifier;
     const cypher_astnode_t *varlength;
     const cypher_astnode_t *properties;
+    const cypher_astnode_t *predicate;
     size_t nreltypes;
     const cypher_astnode_t *reltypes[];
 };
@@ -47,8 +48,9 @@ const struct cypher_astnode_vt cypher_rel_pattern_astnode_vt =
 cypher_astnode_t *cypher_ast_rel_pattern(enum cypher_rel_direction direction,
         const cypher_astnode_t *identifier, cypher_astnode_t * const *reltypes,
         unsigned int nreltypes, const cypher_astnode_t *properties,
-        const cypher_astnode_t *varlength, cypher_astnode_t **children,
-        unsigned int nchildren, struct cypher_input_range range)
+        const cypher_astnode_t *predicate, const cypher_astnode_t *varlength,
+        cypher_astnode_t **children, unsigned int nchildren,
+        struct cypher_input_range range)
 {
     REQUIRE_CHILD_OPTIONAL(children, nchildren, identifier,
             CYPHER_AST_IDENTIFIER, NULL);
@@ -60,6 +62,8 @@ cypher_astnode_t *cypher_ast_rel_pattern(enum cypher_rel_direction direction,
     REQUIRE_CONTAINS_OPTIONAL(children, nchildren, properties, NULL);
     REQUIRE_CHILD_OPTIONAL(children, nchildren, varlength,
             CYPHER_AST_RANGE, NULL);
+    REQUIRE_CHILD_OPTIONAL(children, nchildren, predicate,
+            CYPHER_AST_EXPRESSION, NULL);
 
     struct rel_pattern *node = calloc(1, sizeof(struct rel_pattern) +
             nreltypes * sizeof(cypher_astnode_t *));
@@ -78,6 +82,7 @@ cypher_astnode_t *cypher_ast_rel_pattern(enum cypher_rel_direction direction,
     node->nreltypes = nreltypes;
     node->varlength = varlength;
     node->properties = properties;
+    node->predicate = predicate;
     return &(node->_astnode);
 
     int errsv;
@@ -109,12 +114,14 @@ cypher_astnode_t *clone(const cypher_astnode_t *self,
     }
     cypher_astnode_t *properties = (node->properties == NULL) ? NULL :
             children[child_index(self, node->properties)];
+    cypher_astnode_t *predicate = (node->predicate == NULL) ? NULL :
+            children[child_index(self, node->predicate)];
     cypher_astnode_t *varlength = (node->varlength == NULL) ? NULL :
             children[child_index(self, node->varlength)];
 
     cypher_astnode_t *clone = cypher_ast_rel_pattern(node->direction,
-            identifier, reltypes, node->nreltypes, properties, varlength,
-            children, self->nchildren, self->range);
+            identifier, reltypes, node->nreltypes, properties, predicate,
+            varlength, children, self->nchildren, self->range);
     int errsv = errno;
     free(reltypes);
     errno = errsv;
@@ -185,6 +192,16 @@ const cypher_astnode_t *cypher_ast_rel_pattern_get_properties(
 }
 
 
+const cypher_astnode_t *cypher_ast_rel_pattern_get_predicate(
+        const cypher_astnode_t *astnode)
+{
+    REQUIRE_TYPE(astnode, CYPHER_AST_REL_PATTERN, NULL);
+    struct rel_pattern *node = container_of(astnode, struct rel_pattern,
+        _astnode);
+    return node->predicate;
+}
+
+
 ssize_t detailstr(const cypher_astnode_t *self, char *str, size_t size)
 {
     REQUIRE_TYPE(self, CYPHER_AST_REL_PATTERN, -1);
@@ -236,6 +253,17 @@ ssize_t detailstr(const cypher_astnode_t *self, char *str, size_t size)
     {
         r = snprintf(str+n, (n < size)? size-n : 0, " {@%u}",
                 node->properties->ordinal);
+        if (r < 0)
+        {
+            return -1;
+        }
+        n += r;
+    }
+
+    if (node->predicate != NULL)
+    {
+        r = snprintf(str+n, (n < size)? size-n : 0, ", where=@%u",
+                node->predicate->ordinal);
         if (r < 0)
         {
             return -1;

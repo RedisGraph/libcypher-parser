@@ -295,7 +295,7 @@ START_TEST (track_error_position_across_statements)
     ck_assert_int_eq(pos.column, 11);
     ck_assert_int_eq(pos.offset, 71);
     ck_assert_str_eq(cypher_parse_error_message(err),
-            "Invalid input 'e': expected a label, '{', a parameter or ')'");
+            "Invalid input 'e': expected a label, '{', a parameter, WHERE or ')'");
 }
 END_TEST
 

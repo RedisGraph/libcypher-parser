@@ -818,7 +818,8 @@ node-pattern = < LEFT-PAREN -
     (i:identifier | i:_null_)
     ( n:label                          { sequence_add(n); }
     )* (p:pattern-properties | p:_null_)
-    RIGHT-PAREN >                      { $$ = node_pattern(i, p); }
+    ( WHERE c:expression | c:_null_ )
+    RIGHT-PAREN >                      { $$ = node_pattern(i, p, c); }
 
 relationship-pattern =
       < ( LEFT-ARROW-HEAD - DASH -
@@ -828,9 +829,11 @@ relationship-pattern =
             )
           | LEFT-SQ-PAREN - (i:identifier | i:_null_)
             rel-types? (l:rel-varlength | l:_null_)
-            (p:pattern-properties | p:_null_) RIGHT-SQ-PAREN - DASH 
-            ( - RIGHT-ARROW-HEAD >     { $$ = rel_pattern(BIDIRECTIONAL, i, l, p); }
-            | _empty_ >                { $$ = rel_pattern(INBOUND, i, l, p); }
+            (p:pattern-properties | p:_null_)
+            ( WHERE c:expression | c:_null_ )
+			RIGHT-SQ-PAREN - DASH
+            ( - RIGHT-ARROW-HEAD >     { $$ = rel_pattern(BIDIRECTIONAL, i, l, p, c); }
+            | _empty_ >                { $$ = rel_pattern(INBOUND, i, l, p, c); }
             )
           )
         | DASH -
@@ -840,9 +843,11 @@ relationship-pattern =
             )
           | LEFT-SQ-PAREN - (i:identifier | i:_null_)
             rel-types? (l:rel-varlength | l:_null_)
-            (p:pattern-properties | p:_null_) RIGHT-SQ-PAREN - DASH 
-            ( - RIGHT-ARROW-HEAD >     { $$ = rel_pattern(OUTBOUND, i, l, p); }
-            | _empty_ >                { $$ = rel_pattern(BIDIRECTIONAL, i, l, p); }
+            (p:pattern-properties | p:_null_)
+            ( WHERE c:expression | c:_null_ )
+			RIGHT-SQ-PAREN - DASH
+            ( - RIGHT-ARROW-HEAD >     { $$ = rel_pattern(OUTBOUND, i, l, p, c); }
+            | _empty_ >                { $$ = rel_pattern(BIDIRECTIONAL, i, l, p, c); }
             )
           )
         )
